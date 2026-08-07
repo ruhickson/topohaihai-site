@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TopoHaiHai">
+  <rect width="64" height="64" fill="#0A5230"/>
+  <circle cx="32" cy="32" r="18" fill="#D4A84B"/>
+  <circle cx="32" cy="32" r="7" fill="#F3E6C8"/>
+  <text x="32" y="36" text-anchor="middle" font-family="Georgia, serif" font-size="11" font-weight="700" fill="#1A120C">T</text>
+</svg>

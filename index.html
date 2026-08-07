@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="TopoHaiHai — an Irish games studio. Currently in development: BallouT, a portrait mobile puzzle with absolute movement."
+    />
+    <meta name="theme-color" content="#0A5230" />
+    <title>TopoHaiHai — Irish Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Outfit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="wordmark" href="#top">TopoHaiHai</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#ballout">BallouT</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="brand">
+        <div class="hero-visual" aria-hidden="true">
+          <div class="felt"></div>
+          <div class="felt-grain"></div>
+          <svg class="board" viewBox="0 0 720 900" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.35" />
+              </filter>
+            </defs>
+            <!-- Crossword-style rails -->
+            <g class="rails" stroke="#6B4226" stroke-width="10" stroke-linecap="square" fill="none">
+              <path d="M90 160 H280 V320 H160 V480 H320 V640 H90" />
+              <path d="M400 120 V300 H560 V460 H430 V620 H630" />
+              <path d="M200 700 H520 V780" />
+            </g>
+            <g class="holes" fill="#0A0A0A">
+              <circle cx="160" cy="480" r="22" />
+              <circle cx="560" cy="460" r="22" />
+              <circle cx="430" cy="620" r="18" />
+            </g>
+            <g class="exit" fill="none" stroke="#D4A84B" stroke-width="6">
+              <circle cx="520" cy="780" r="28" />
+              <circle cx="520" cy="780" r="14" fill="#148A4E" stroke="none" />
+            </g>
+            <g class="balls" filter="url(#soft)">
+              <g class="ball ball-1" transform="translate(220 220)">
+                <circle r="34" fill="#FFD54A" />
+                <circle r="14" fill="#F3E6C8" />
+                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">1</text>
+              </g>
+              <g class="ball ball-2" transform="translate(480 380)">
+                <circle r="34" fill="#2F6FE0" />
+                <circle r="14" fill="#F3E6C8" />
+                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">2</text>
+              </g>
+              <g class="ball ball-3" transform="translate(300 540)">
+                <circle r="34" fill="#D62828" />
+                <circle r="14" fill="#F3E6C8" />
+                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">3</text>
+              </g>
+              <g class="ball ball-8" transform="translate(600 200)">
+                <circle r="34" fill="#1A1A1A" />
+                <circle r="14" fill="#F3E6C8" />
+                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">8</text>
+              </g>
+            </g>
+          </svg>
+          <div class="hero-veil"></div>
+        </div>
+
+        <div class="hero-copy">
+          <p class="locale">Ireland</p>
+          <h1 id="brand">TopoHaiHai</h1>
+          <p class="lede">
+            An Irish games studio. One sharp puzzle on the table — more to come.
+          </p>
+          <div class="cta-row">
+            <a class="cta" href="#ballout">Meet BallouT</a>
+            <a class="cta cta-quiet" href="mailto:hello@topohaihai.com">Say hello</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="feature" id="ballout" aria-labelledby="ballout-title">
+        <div class="feature-inner">
+          <p class="eyebrow">In development</p>
+          <h2 id="ballout-title">BallouT</h2>
+          <p class="feature-lede">
+            A portrait mobile puzzle with absolute movement. Numbered balls keep
+            rolling across a crossword-style grid until a wall, a hole, or the
+            exit stops them. Every swipe is a commitment.
+          </p>
+          <ul class="traits">
+            <li>Snooker-club craft — felt, brass, and numbered balls</li>
+            <li>Built for daily habits — clear in seconds, deep for hours</li>
+            <li>Godot · mobile-first · original Irish IP</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contact" id="contact" aria-labelledby="contact-title">
+        <div class="contact-inner">
+          <h2 id="contact-title">Get in touch</h2>
+          <p>
+            Press, funding, or just curious — we’d love to hear from you.
+          </p>
+          <a class="mail" href="mailto:hello@topohaihai.com">hello@topohaihai.com</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> TopoHaiHai · Made in Ireland</p>
+    </footer>
+
+    <script src="main.js"></script>
+  </body>
+</html>
