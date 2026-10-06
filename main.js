@@ -20,7 +20,6 @@ const BSKY_HANDLE = "thhru.bsky.social";
 const BSKY_LIMIT = 5;
 
 function postUrl(uri) {
-  // at://did:plc:.../app.bsky.feed.post/rkey
   const parts = uri.replace("at://", "").split("/");
   const did = parts[0];
   const rkey = parts[parts.length - 1];
@@ -28,7 +27,7 @@ function postUrl(uri) {
 }
 
 function escapeHtml(text) {
-  return text
+  return String(text)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -51,6 +50,17 @@ function formatRelative(iso) {
   const months = Math.round(days / 30);
   if (Math.abs(months) < 12) return rtf.format(-months, "month");
   return rtf.format(-Math.round(months / 12), "year");
+}
+
+function shortHandle(handle) {
+  if (!handle) return "";
+  return handle.replace(/\.bsky\.social$/i, "");
+}
+
+function formatCount(n) {
+  if (!n) return "0";
+  if (n < 1000) return String(n);
+  return `${(n / 1000).toFixed(n < 10000 ? 1 : 0)}k`;
 }
 
 function renderText(record) {
@@ -89,7 +99,7 @@ function renderText(record) {
   }
 
   html += escapeHtml(decoder.decode(bytes.slice(cursor)));
-  return html.replace(/\n/g, "<br>");
+  return html.replace(/\n{2,}/g, "<br><br>").replace(/\n/g, "<br>");
 }
 
 function renderImages(embed) {
@@ -97,8 +107,9 @@ function renderImages(embed) {
   const images = embed.images || [];
   if (!images.length) return "";
 
-  return `<div class="bsky-images">${images
-    .slice(0, 2)
+  const count = Math.min(images.length, 4);
+  return `<div class="bsky-images bsky-images-${count}">${images
+    .slice(0, 4)
     .map(
       (img) =>
         `<img src="${escapeHtml(img.thumb)}" alt="${escapeHtml(img.alt || "")}" loading="lazy" />`
@@ -111,17 +122,47 @@ function renderExternal(embed) {
   const ext = embed.external;
   if (!ext?.uri) return "";
 
+  let host = "";
+  try {
+    host = new URL(ext.uri).hostname.replace(/^www\./, "");
+  } catch {
+    host = "";
+  }
+
   const thumb = ext.thumb
     ? `<img src="${escapeHtml(ext.thumb)}" alt="" loading="lazy" />`
-    : "";
+    : `<span class="bsky-external-fallback" aria-hidden="true"></span>`;
 
   return `<a class="bsky-external" href="${escapeHtml(ext.uri)}" target="_blank" rel="noopener noreferrer">
     ${thumb}
-    <span>
+    <span class="bsky-external-copy">
+      ${host ? `<em>${escapeHtml(host)}</em>` : ""}
       <strong>${escapeHtml(ext.title || ext.uri)}</strong>
       ${ext.description ? `<small>${escapeHtml(ext.description)}</small>` : ""}
     </span>
   </a>`;
+}
+
+function avatarMarkup(author) {
+  const name = author.displayName || author.handle || "?";
+  const initial = escapeHtml(name.trim().charAt(0).toUpperCase() || "?");
+  if (author.avatar) {
+    return `<img class="bsky-avatar" src="${escapeHtml(author.avatar)}" alt="" width="44" height="44" loading="lazy" />`;
+  }
+  return `<span class="bsky-avatar bsky-avatar-fallback" aria-hidden="true">${initial}</span>`;
+}
+
+function renderStats(post) {
+  const likes = post.likeCount || 0;
+  const reposts = post.repostCount || 0;
+  const replies = post.replyCount || 0;
+  if (!likes && !reposts && !replies) return "";
+
+  return `<span class="bsky-stats">
+    <span title="Replies">${formatCount(replies)} replies</span>
+    <span title="Reposts">${formatCount(reposts)} reposts</span>
+    <span title="Likes">${formatCount(likes)} likes</span>
+  </span>`;
 }
 
 function renderPost(item) {
@@ -129,25 +170,40 @@ function renderPost(item) {
   const reason = item.reason;
   const isRepost = reason?.$type === "app.bsky.feed.defs#reasonRepost";
   const author = post.author;
-  const when = post.record?.createdAt || post.indexedAt;
+  const when = isRepost
+    ? reason.indexedAt || post.record?.createdAt || post.indexedAt
+    : post.record?.createdAt || post.indexedAt;
+  const handle = shortHandle(author.handle);
 
-  const meta = isRepost
-    ? `<p class="bsky-meta">Reposted · ${formatRelative(reason.indexedAt || when)}</p>`
-    : `<p class="bsky-meta">${formatRelative(when)}</p>`;
-
-  const authorLine = `<p class="bsky-author">
-    <span class="bsky-name">${escapeHtml(author.displayName || author.handle)}</span>
-    <span class="bsky-handle">@${escapeHtml(author.handle)}</span>
-  </p>`;
+  const repostLabel = isRepost
+    ? `<p class="bsky-repost">Reposted</p>`
+    : "";
 
   return `<article class="bsky-post">
-    <a class="bsky-post-link" href="${postUrl(post.uri)}" target="_blank" rel="noopener noreferrer">
-      ${meta}
-      ${authorLine}
-      <p class="bsky-text">${renderText(post.record)}</p>
-    </a>
-    ${renderImages(post.embed)}
-    ${renderExternal(post.embed)}
+    ${repostLabel}
+    <div class="bsky-row">
+      <a class="bsky-avatar-link" href="https://bsky.app/profile/${escapeHtml(author.handle)}" target="_blank" rel="noopener noreferrer">
+        ${avatarMarkup(author)}
+      </a>
+      <div class="bsky-body">
+        <header class="bsky-header">
+          <div class="bsky-identity">
+            <a class="bsky-name" href="https://bsky.app/profile/${escapeHtml(author.handle)}" target="_blank" rel="noopener noreferrer">${escapeHtml(author.displayName || handle)}</a>
+            <span class="bsky-handle">@${escapeHtml(handle)}</span>
+          </div>
+          <time class="bsky-time" datetime="${escapeHtml(when)}">${escapeHtml(formatRelative(when))}</time>
+        </header>
+        <a class="bsky-post-link" href="${postUrl(post.uri)}" target="_blank" rel="noopener noreferrer">
+          <p class="bsky-text">${renderText(post.record)}</p>
+        </a>
+        ${renderImages(post.embed)}
+        ${renderExternal(post.embed)}
+        <footer class="bsky-footer">
+          ${renderStats(post)}
+          <a class="bsky-open" href="${postUrl(post.uri)}" target="_blank" rel="noopener noreferrer">View</a>
+        </footer>
+      </div>
+    </div>
   </article>`;
 }
 

@@ -424,13 +424,15 @@ a {
 
 /* —— Bluesky updates —— */
 .updates {
+  position: relative;
   background:
-    linear-gradient(180deg, var(--felt-deep) 0%, var(--felt-dark) 55%, #0c3d26 100%);
-  border-top: 1px solid rgba(212, 168, 75, 0.2);
+    radial-gradient(ellipse 70% 45% at 10% 0%, rgba(212, 168, 75, 0.08), transparent 55%),
+    linear-gradient(180deg, #0b2f1f 0%, var(--felt-dark) 45%, #082418 100%);
+  border-top: 1px solid rgba(212, 168, 75, 0.22);
 }
 
 .updates-inner {
-  max-width: 40rem;
+  max-width: 42rem;
   padding: clamp(3.5rem, 10vh, 6rem) clamp(1.25rem, 4vw, 3rem);
 }
 
@@ -438,8 +440,8 @@ a {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .updates-head h2 {
@@ -450,34 +452,48 @@ a {
   letter-spacing: 0.03em;
 }
 
+.updates-lede {
+  margin: 0.55rem 0 0;
+  max-width: 24rem;
+  font-size: 0.98rem;
+  font-weight: 300;
+  color: var(--muted);
+}
+
 .bsky-follow {
   flex-shrink: 0;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.9rem;
+  padding: 0.7rem 1.05rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  color: var(--brass-light);
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: var(--brass);
+  border: 1px solid var(--brass-light);
   text-decoration: none;
-  border: 1px solid rgba(212, 168, 75, 0.55);
   transition:
-    color 0.25s var(--ease),
-    background 0.25s var(--ease),
-    border-color 0.25s var(--ease);
+    transform 0.25s var(--ease),
+    background 0.25s var(--ease);
 }
 
 .bsky-follow:hover,
 .bsky-follow:focus-visible {
-  color: var(--ink);
-  background: var(--brass);
-  border-color: var(--brass-light);
+  background: var(--brass-light);
+  transform: translateY(-1px);
 }
 
 .bsky-feed {
   display: flex;
   flex-direction: column;
+  background:
+    linear-gradient(165deg, rgba(42, 16, 20, 0.72) 0%, rgba(20, 8, 10, 0.88) 100%);
+  border: 1px solid rgba(212, 168, 75, 0.35);
+  border-top-color: rgba(240, 215, 140, 0.45);
+  box-shadow: inset 0 1px 0 rgba(240, 215, 140, 0.12);
 }
 
 .bsky-status {
   margin: 0;
+  padding: 1.5rem 1.25rem;
   color: var(--muted);
   font-weight: 300;
 }
@@ -487,12 +503,100 @@ a {
 }
 
 .bsky-post {
-  padding: 1.35rem 0;
-  border-top: 1px solid rgba(212, 168, 75, 0.18);
+  padding: 1.15rem 1.15rem 1.05rem;
+  border-bottom: 1px solid rgba(212, 168, 75, 0.14);
+  transition: background 0.25s var(--ease);
 }
 
 .bsky-post:last-child {
-  border-bottom: 1px solid rgba(212, 168, 75, 0.18);
+  border-bottom: none;
+}
+
+.bsky-post:hover {
+  background: rgba(110, 15, 30, 0.18);
+}
+
+.bsky-repost {
+  margin: 0 0 0.55rem 3.35rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+.bsky-row {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.bsky-avatar-link {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.bsky-avatar {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border: 1px solid rgba(212, 168, 75, 0.45);
+  background: var(--mahogany);
+}
+
+.bsky-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brass-light);
+}
+
+.bsky-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.bsky-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.bsky-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.bsky-name {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ivory);
+  text-decoration: none;
+}
+
+.bsky-name:hover,
+.bsky-name:focus-visible {
+  color: var(--brass-light);
+}
+
+.bsky-handle {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.bsky-time {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .bsky-post-link {
@@ -501,109 +605,160 @@ a {
   color: inherit;
 }
 
-.bsky-post-link:hover .bsky-text,
-.bsky-post-link:focus-visible .bsky-text {
-  color: var(--brass-light);
+.bsky-text {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ivory);
 }
 
-.bsky-meta {
-  margin: 0 0 0.45rem;
-  font-size: 0.75rem;
+.bsky-text a {
+  color: var(--brass-light);
+  text-decoration: underline;
+  text-decoration-color: rgba(212, 168, 75, 0.45);
+  text-underline-offset: 0.15em;
+}
+
+.bsky-text a:hover {
+  text-decoration-color: var(--brass-light);
+}
+
+.bsky-images {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(212, 168, 75, 0.28);
+}
+
+.bsky-images-1 {
+  grid-template-columns: 1fr;
+}
+
+.bsky-images-2,
+.bsky-images-4 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.bsky-images-3 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.bsky-images img {
+  width: 100%;
+  height: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  background: #0a0a0a;
+}
+
+.bsky-external {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--ivory);
+  border: 1px solid rgba(212, 168, 75, 0.28);
+  background: rgba(10, 82, 48, 0.22);
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+}
+
+.bsky-external:hover,
+.bsky-external:focus-visible {
+  border-color: rgba(212, 168, 75, 0.65);
+  background: rgba(10, 82, 48, 0.35);
+}
+
+.bsky-external img,
+.bsky-external-fallback {
+  width: 104px;
+  min-height: 78px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background:
+    linear-gradient(135deg, var(--felt-dark), var(--velvet-deep));
+}
+
+.bsky-external-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+}
+
+.bsky-external-copy em {
+  font-style: normal;
+  font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--brass);
 }
 
-.bsky-author {
-  margin: 0 0 0.55rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  align-items: baseline;
-}
-
-.bsky-name {
-  font-weight: 500;
-  color: var(--ivory);
-}
-
-.bsky-handle {
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-.bsky-text {
-  margin: 0;
-  font-size: 1.02rem;
-  font-weight: 300;
-  line-height: 1.55;
-  color: var(--ivory);
-  transition: color 0.25s var(--ease);
-}
-
-.bsky-text a {
-  color: var(--brass-light);
-}
-
-.bsky-images {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.6rem;
-  margin-top: 0.9rem;
-}
-
-.bsky-images img {
-  width: 100%;
-  height: auto;
-  max-height: 220px;
-  object-fit: cover;
-  border: 1px solid rgba(212, 168, 75, 0.25);
-}
-
-.bsky-external {
-  display: flex;
-  gap: 0.85rem;
-  align-items: stretch;
-  margin-top: 0.9rem;
-  padding: 0.65rem 0.75rem;
-  text-decoration: none;
-  color: var(--ivory);
-  border: 1px solid rgba(212, 168, 75, 0.28);
-  background: rgba(10, 82, 48, 0.35);
-  transition: border-color 0.25s var(--ease);
-}
-
-.bsky-external:hover,
-.bsky-external:focus-visible {
-  border-color: var(--brass);
-}
-
-.bsky-external img {
-  width: 88px;
-  height: 66px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.bsky-external span {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
 .bsky-external strong {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 500;
+  line-height: 1.3;
 }
 
 .bsky-external small {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.bsky-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.bsky-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.bsky-open {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--brass);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.bsky-open:hover,
+.bsky-open:focus-visible {
+  color: var(--brass-light);
+}
+
+@media (max-width: 520px) {
+  .updates-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bsky-external img,
+  .bsky-external-fallback {
+    width: 84px;
+  }
+
+  .bsky-stats {
+    gap: 0.5rem;
+  }
 }
 
 /* —— Contact —— */
