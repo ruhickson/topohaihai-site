@@ -14,6 +14,413 @@ if (!reduced) {
     },
     { passive: true }
   );
+
+  initHeroBallPhysics();
+} else {
+  placeStaticHeroBalls();
+}
+
+function placeStaticHeroBalls() {
+  const layer = document.getElementById("hero-balls");
+  const hero = document.querySelector(".hero");
+  if (!layer || !hero) return;
+
+  const rect = hero.getBoundingClientRect();
+  const size = Math.min(68, Math.max(48, rect.width * 0.07));
+  const starts = [
+    [0.28, 0.22],
+    [0.72, 0.38],
+    [0.42, 0.58],
+    [0.82, 0.2],
+  ];
+
+  [...layer.querySelectorAll(".phys-ball")].forEach((el, i) => {
+    const [px, py] = starts[i] || [0.5, 0.5];
+    el.style.setProperty("--ball-size", `${size}px`);
+    el.style.transform = `translate3d(${px * rect.width - size / 2}px, ${py * rect.height - size / 2}px, 0)`;
+  });
+}
+
+function initHeroBallPhysics() {
+  const hero = document.querySelector(".hero");
+  const layer = document.getElementById("hero-balls");
+  if (!hero || !layer) return;
+
+  const RESTITUTION = 0.86;
+  const FRICTION = 1.85; // velocity decay per second
+  const STOP_SPEED = 8;
+  const MAX_SPEED = 2200;
+  const NUDGE_GAIN = 0.55;
+  const THROW_GAIN = 1.15;
+  const STARTS = [
+    [0.28, 0.22],
+    [0.72, 0.38],
+    [0.42, 0.58],
+    [0.82, 0.2],
+  ];
+
+  /** @type {{el: HTMLElement, x: number, y: number, vx: number, vy: number, r: number, held: boolean}[]} */
+  const balls = [...layer.querySelectorAll(".phys-ball")].map((el, i) => ({
+    el,
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    r: 34,
+    held: false,
+    start: STARTS[i] || [0.5, 0.5],
+  }));
+
+  let width = 0;
+  let height = 0;
+  let running = false;
+  let raf = 0;
+  let lastTs = 0;
+  let held = null;
+  let grabDX = 0;
+  let grabDY = 0;
+  let pointerId = null;
+  const trail = [];
+  let prevPointer = null;
+
+  function ballSize() {
+    return Math.min(72, Math.max(50, width * 0.065));
+  }
+
+  function layout(resetPositions) {
+    const rect = hero.getBoundingClientRect();
+    width = rect.width;
+    height = rect.height;
+    const size = ballSize();
+    const r = size / 2;
+
+    for (const b of balls) {
+      b.r = r;
+      b.el.style.setProperty("--ball-size", `${size}px`);
+      if (resetPositions) {
+        b.x = b.start[0] * width;
+        b.y = b.start[1] * height;
+        b.vx = 0;
+        b.vy = 0;
+      }
+      b.x = clamp(b.x, r, width - r);
+      b.y = clamp(b.y, r, height - r);
+      paint(b);
+    }
+  }
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function paint(b) {
+    b.el.style.transform = `translate3d(${b.x - b.r}px, ${b.y - b.r}px, 0)`;
+  }
+
+  function speed(b) {
+    return Math.hypot(b.vx, b.vy);
+  }
+
+  function anyMoving() {
+    return balls.some((b) => b.held || speed(b) > STOP_SPEED);
+  }
+
+  function wake() {
+    if (running) return;
+    running = true;
+    lastTs = 0;
+    raf = requestAnimationFrame(tick);
+  }
+
+  function sleepMaybe() {
+    if (!anyMoving()) {
+      running = false;
+      for (const b of balls) {
+        b.vx = 0;
+        b.vy = 0;
+      }
+    }
+  }
+
+  function bounceWalls(b) {
+    if (b.x < b.r) {
+      b.x = b.r;
+      b.vx = Math.abs(b.vx) * RESTITUTION;
+    } else if (b.x > width - b.r) {
+      b.x = width - b.r;
+      b.vx = -Math.abs(b.vx) * RESTITUTION;
+    }
+
+    if (b.y < b.r) {
+      b.y = b.r;
+      b.vy = Math.abs(b.vy) * RESTITUTION;
+    } else if (b.y > height - b.r) {
+      b.y = height - b.r;
+      b.vy = -Math.abs(b.vy) * RESTITUTION;
+    }
+  }
+
+  function collideBalls() {
+    for (let i = 0; i < balls.length; i++) {
+      for (let j = i + 1; j < balls.length; j++) {
+        const a = balls[i];
+        const b = balls[j];
+        if (a.held && b.held) continue;
+
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let dist = Math.hypot(dx, dy);
+        const minDist = a.r + b.r;
+
+        if (dist === 0) {
+          dx = 0.01;
+          dy = 0;
+          dist = 0.01;
+        }
+
+        if (dist >= minDist) continue;
+
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const overlap = minDist - dist;
+
+        // Separate (skip moving a held ball)
+        if (a.held) {
+          b.x += nx * overlap;
+          b.y += ny * overlap;
+        } else if (b.held) {
+          a.x -= nx * overlap;
+          a.y -= ny * overlap;
+        } else {
+          a.x -= nx * overlap * 0.5;
+          a.y -= ny * overlap * 0.5;
+          b.x += nx * overlap * 0.5;
+          b.y += ny * overlap * 0.5;
+        }
+
+        const dvx = a.vx - b.vx;
+        const dvy = a.vy - b.vy;
+        const impact = dvx * nx + dvy * ny;
+        if (impact <= 0) continue;
+
+        const impulse = impact * RESTITUTION;
+        if (!a.held) {
+          a.vx -= impulse * nx;
+          a.vy -= impulse * ny;
+        }
+        if (!b.held) {
+          b.vx += impulse * nx;
+          b.vy += impulse * ny;
+        }
+      }
+    }
+  }
+
+  function capSpeed(b) {
+    const s = speed(b);
+    if (s > MAX_SPEED) {
+      const k = MAX_SPEED / s;
+      b.vx *= k;
+      b.vy *= k;
+    }
+  }
+
+  function tick(ts) {
+    if (!running) return;
+    if (!lastTs) lastTs = ts;
+    let dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    dt = Math.min(dt, 0.032);
+
+    for (const b of balls) {
+      if (b.held) {
+        paint(b);
+        continue;
+      }
+
+      // Frame-rate independent damping
+      const damp = Math.exp(-FRICTION * dt);
+      b.vx *= damp;
+      b.vy *= damp;
+
+      if (speed(b) < STOP_SPEED) {
+        b.vx = 0;
+        b.vy = 0;
+      } else {
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        bounceWalls(b);
+        capSpeed(b);
+      }
+    }
+
+    collideBalls();
+
+    for (const b of balls) {
+      if (!b.held) bounceWalls(b);
+      paint(b);
+    }
+
+    if (anyMoving()) {
+      raf = requestAnimationFrame(tick);
+    } else {
+      running = false;
+      sleepMaybe();
+    }
+  }
+
+  function localPoint(e) {
+    const rect = hero.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  }
+
+  function hitBall(x, y) {
+    let best = null;
+    let bestDist = Infinity;
+    for (const b of balls) {
+      const d = Math.hypot(b.x - x, b.y - y);
+      if (d <= b.r + 4 && d < bestDist) {
+        best = b;
+        bestDist = d;
+      }
+    }
+    return best;
+  }
+
+  function recordTrail(x, y, t) {
+    trail.push({ x, y, t });
+    while (trail.length > 8) trail.shift();
+  }
+
+  function trailVelocity() {
+    if (trail.length < 2) return { vx: 0, vy: 0 };
+    const a = trail[0];
+    const b = trail[trail.length - 1];
+    const dt = (b.t - a.t) / 1000;
+    if (dt <= 0.001) return { vx: 0, vy: 0 };
+    return {
+      vx: ((b.x - a.x) / dt) * THROW_GAIN,
+      vy: ((b.y - a.y) / dt) * THROW_GAIN,
+    };
+  }
+
+  function nudgeFromPointer(x, y, vx, vy) {
+    const cursorSpeed = Math.hypot(vx, vy);
+    if (cursorSpeed < 40) return;
+
+    let woke = false;
+    for (const b of balls) {
+      if (b.held) continue;
+      const dx = b.x - x;
+      const dy = b.y - y;
+      const dist = Math.hypot(dx, dy);
+      const reach = b.r + 18;
+      if (dist > reach || dist < 0.001) continue;
+
+      // Only nudge when cursor is moving roughly into/across the ball
+      const approach = (vx * dx + vy * dy) / (cursorSpeed * dist);
+      if (approach < -0.15) continue;
+
+      const strength = (1 - dist / reach) * cursorSpeed * NUDGE_GAIN;
+      b.vx += (dx / dist) * strength * 0.35 + vx * NUDGE_GAIN * 0.25;
+      b.vy += (dy / dist) * strength * 0.35 + vy * NUDGE_GAIN * 0.25;
+      capSpeed(b);
+      woke = true;
+    }
+    if (woke) wake();
+  }
+
+  function onPointerDown(e) {
+    if (e.target.closest("a, button, input, textarea, .bsky-feed, .hero-copy, .site-header")) {
+      return;
+    }
+    const p = localPoint(e);
+    if (p.x < 0 || p.y < 0 || p.x > width || p.y > height) return;
+
+    const b = hitBall(p.x, p.y);
+    if (!b) return;
+
+    e.preventDefault();
+    held = b;
+    pointerId = e.pointerId;
+    b.held = true;
+    b.vx = 0;
+    b.vy = 0;
+    grabDX = b.x - p.x;
+    grabDY = b.y - p.y;
+    b.el.classList.add("is-held");
+    trail.length = 0;
+    recordTrail(p.x, p.y, performance.now());
+    try {
+      b.el.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    wake();
+  }
+
+  function onPointerMove(e) {
+    const p = localPoint(e);
+    const now = performance.now();
+
+    if (held && e.pointerId === pointerId) {
+      held.x = clamp(p.x + grabDX, held.r, width - held.r);
+      held.y = clamp(p.y + grabDY, held.r, height - held.r);
+      recordTrail(p.x, p.y, now);
+      paint(held);
+      collideBalls();
+      for (const b of balls) paint(b);
+      wake();
+      return;
+    }
+
+    // Cursor "hit" nudges while moving over the hero felt
+    if (p.x < 0 || p.y < 0 || p.x > width || p.y > height) {
+      prevPointer = null;
+      return;
+    }
+
+    if (prevPointer) {
+      const dt = (now - prevPointer.t) / 1000;
+      if (dt > 0 && dt < 0.08) {
+        const vx = (p.x - prevPointer.x) / dt;
+        const vy = (p.y - prevPointer.y) / dt;
+        nudgeFromPointer(p.x, p.y, vx, vy);
+      }
+    }
+    prevPointer = { x: p.x, y: p.y, t: now };
+  }
+
+  function onPointerUp(e) {
+    if (!held || e.pointerId !== pointerId) return;
+    const v = trailVelocity();
+    held.vx = clamp(v.vx, -MAX_SPEED, MAX_SPEED);
+    held.vy = clamp(v.vy, -MAX_SPEED, MAX_SPEED);
+    held.held = false;
+    held.el.classList.remove("is-held");
+    try {
+      held.el.releasePointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    held = null;
+    pointerId = null;
+    trail.length = 0;
+    wake();
+  }
+
+  layout(true);
+
+  const ro = new ResizeObserver(() => layout(false));
+  ro.observe(hero);
+
+  hero.addEventListener("pointerdown", onPointerDown, { passive: false });
+  window.addEventListener("pointermove", onPointerMove, { passive: true });
+  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointercancel", onPointerUp);
 }
 
 const BSKY_HANDLE = "thhru.bsky.social";

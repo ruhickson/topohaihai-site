@@ -32,15 +32,10 @@
 
     <main id="top">
       <section class="hero" aria-labelledby="brand">
-        <div class="hero-visual" aria-hidden="true">
-          <div class="felt"></div>
-          <div class="felt-grain"></div>
-          <svg class="board" viewBox="0 0 720 900" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.35" />
-              </filter>
-            </defs>
+        <div class="hero-visual">
+          <div class="felt" aria-hidden="true"></div>
+          <div class="felt-grain" aria-hidden="true"></div>
+          <svg class="board" viewBox="0 0 720 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <!-- Crossword-style rails -->
             <g class="rails" stroke="#6B4226" stroke-width="10" stroke-linecap="square" fill="none">
               <path d="M90 160 H280 V320 H160 V480 H320 V640 H90" />
@@ -56,30 +51,14 @@
               <circle cx="520" cy="780" r="28" />
               <circle cx="520" cy="780" r="14" fill="#148A4E" stroke="none" />
             </g>
-            <g class="balls" filter="url(#soft)">
-              <g class="ball ball-1" transform="translate(220 220)">
-                <circle r="34" fill="#FFD54A" />
-                <circle r="14" fill="#F3E6C8" />
-                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">1</text>
-              </g>
-              <g class="ball ball-2" transform="translate(480 380)">
-                <circle r="34" fill="#2F6FE0" />
-                <circle r="14" fill="#F3E6C8" />
-                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">2</text>
-              </g>
-              <g class="ball ball-3" transform="translate(300 540)">
-                <circle r="34" fill="#D62828" />
-                <circle r="14" fill="#F3E6C8" />
-                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">3</text>
-              </g>
-              <g class="ball ball-8" transform="translate(600 200)">
-                <circle r="34" fill="#1A1A1A" />
-                <circle r="14" fill="#F3E6C8" />
-                <text y="6" text-anchor="middle" font-family="Cinzel, serif" font-size="16" font-weight="700" fill="#1A120C">8</text>
-              </g>
-            </g>
           </svg>
-          <div class="hero-veil"></div>
+          <div class="hero-veil" aria-hidden="true"></div>
+          <div class="hero-balls" id="hero-balls" aria-hidden="true">
+            <div class="phys-ball" style="--ball:#FFD54A;--ink:#1A120C">2</div>
+            <div class="phys-ball" style="--ball:#D62828;--ink:#1A120C">1</div>
+            <div class="phys-ball" style="--ball:#2F6FE0;--ink:#1A120C">5</div>
+            <div class="phys-ball" style="--ball:#1A1A1A;--ink:#1A120C">7</div>
+          </div>
         </div>
 
         <div class="hero-copy">

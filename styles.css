@@ -154,6 +154,8 @@ a {
 .hero-veil {
   position: absolute;
   inset: 0;
+  z-index: 1;
+  pointer-events: none;
   background:
     linear-gradient(
       to top,
@@ -169,9 +171,54 @@ a {
     );
 }
 
+.hero-balls {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.phys-ball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ball-size, 68px);
+  height: var(--ball-size, 68px);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: calc(var(--ball-size, 68px) * 0.28);
+  font-weight: 700;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 50% 50%, #f3e6c8 0 18%, transparent 19%),
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.42), transparent 34%),
+    radial-gradient(circle at 50% 58%, var(--ball) 0%, #111 160%);
+  border: 2px solid rgba(243, 230, 200, 0.35);
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.35),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.22);
+  transform: translate3d(-9999px, -9999px, 0);
+  will-change: transform;
+  user-select: none;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.phys-ball.is-held {
+  cursor: grabbing;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.4),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.22);
+  z-index: 3;
+}
+
 .hero-copy {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   padding: clamp(5rem, 12vh, 8rem) clamp(1.25rem, 4vw, 3rem) clamp(2.5rem, 6vh, 4rem);
   max-width: 40rem;
 }
@@ -248,60 +295,6 @@ a {
   background: var(--brass);
 }
 
-/* Ball motion */
-.ball-1 {
-  animation: roll-1 9s var(--ease) infinite alternate;
-}
-
-.ball-2 {
-  animation: roll-2 11s var(--ease) infinite alternate;
-}
-
-.ball-3 {
-  animation: roll-3 10s var(--ease) infinite alternate;
-}
-
-.ball-8 {
-  animation: float-8 7s ease-in-out infinite;
-}
-
-@keyframes roll-1 {
-  from {
-    transform: translate(220px, 220px);
-  }
-  to {
-    transform: translate(280px, 320px);
-  }
-}
-
-@keyframes roll-2 {
-  from {
-    transform: translate(480px, 380px);
-  }
-  to {
-    transform: translate(430px, 460px);
-  }
-}
-
-@keyframes roll-3 {
-  from {
-    transform: translate(300px, 540px);
-  }
-  to {
-    transform: translate(320px, 640px);
-  }
-}
-
-@keyframes float-8 {
-  0%,
-  100% {
-    transform: translate(600px, 200px);
-  }
-  50% {
-    transform: translate(600px, 230px);
-  }
-}
-
 /* Entrance */
 .hero-copy .locale,
 .hero-copy h1,
@@ -334,15 +327,15 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ball-1,
-  .ball-2,
-  .ball-3,
-  .ball-8,
   .hero-copy .locale,
   .hero-copy h1,
   .hero-copy .lede,
   .hero-copy .cta-row {
     animation: none;
+  }
+
+  .phys-ball {
+    pointer-events: none;
   }
 }
 
